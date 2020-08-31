@@ -10,9 +10,9 @@ NB:: The relaxation should be done perpendicular to the screw dislocation line,
 that is on the plane. (T T F VASP5 format).
 
 - Initial and finally geometries should be fully relaxed. 
-- Generate with ASE-NEB images between the initial and final image by linear interpolation. 
+- Generate with ASE-NEB the transition path (initial guess) between the initial 
+  and final geometries by interpolating linearly or using idpp. 
 - The intermediate images should be constrained and relaxed accordingly.
-- 
 
 REF:
 

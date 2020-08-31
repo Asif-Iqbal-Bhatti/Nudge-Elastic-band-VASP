@@ -1,9 +1,8 @@
 # Nudge-Elastic-band
 
-----------------------------NOTE----------------------------
+Keep in mind the settings for the NEB calculations. These can be tricky at times.
 
-Please, keep in mind the setup of the calculation in this directory. 
-The barrier obtained (46.3 meV/b) with this setup agrees favorably with 
+The barrier obtained (Ta: 46.3 meV/b) with this setup agrees favorably with 
 the values given in the references. Hence, I can be sure my setup is right, 
 and I can extend this approach to High Entropy Alloys.
 

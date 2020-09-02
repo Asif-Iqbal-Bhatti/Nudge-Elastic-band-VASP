@@ -1,6 +1,6 @@
 # Nudge-Elastic-band
 
-Keep in mind the settings for the NEB calculations. These can be tricky at times.
+NB: The settings for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 
 The barrier obtained (Ta: 46.3 meV/b) with this setup agrees favorably with 
 the values given in the references. Hence, I can be sure my setup is right, 

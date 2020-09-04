@@ -1,4 +1,4 @@
-# Nudge-Elastic-band
+# Nudge-Elastic-band | Short range order (SRO)
 
 NB: The settings for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 

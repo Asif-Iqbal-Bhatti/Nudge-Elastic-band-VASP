@@ -14,6 +14,14 @@ that is on the plane. (T T F VASP5 format).
   and final geometries by interpolating linearly or using idpp. 
 - The intermediate images should be constrained and relaxed accordingly.
 
+#---------------------------------------------------------------------------------------
+
+neb_vasp.py calls selective_dynamics.sh bash file to append T T F to the POSCAR file.
+Calling a script from python is not a good idea, I am sure there must be a best and 
+quick way to internally call the function using "ase" module (https://wiki.fysik.dtu.dk/ase/). 
+
+#---------------------------------------------------------------------------------------
+
 REF:
 
 1 --> https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2017/1711595.pdf

@@ -87,11 +87,12 @@ def metropolis_MC(new_energy, old_energy, naccept, nreject):
 
 '''------------------------------------MAIN PROGRAM--------------------------'''
 	
-# First calculate the ground/optimized energy of the current SQS or SRO structure
+# First obtain the ground/optimized energy of the current SQS or SRO structure
 naccept = 0; nreject = 0; 
 old_energy = calculate_energy();
 n_atoms, pos, firstline, alat, Latvec1,Latvec2,Latvec3, elementtype, atomtypes, Coordtype = read_poscar();
-print ("____--> Initial system Energy: {:15.8f}".format(old_energy), end = '\n')
+print ("----> Initial system Energy: {:15.8f}".format(old_energy), end = '\n')
+
 with open('profile.dat', 'a') as fdata3:
 	fdata3.write ("T={:5f} Sample={:5d} Atoms={:5d}\n".format(T, sample, n_atoms))
 with open('profile.dat', 'a') as fdata3:
@@ -102,9 +103,15 @@ for i in range(1, sample):
 	os.chdir('POS_'+str(i).zfill(3))
 	
 	#SRO=subprocess.call(['sqsgenerator','alpha','sqs','CONTCAR'], shell = False)
-	SRO=float ( os.popen("sqsgenerator alpha sqs CONTCAR | grep 'α=' | cut -d'=' -f 2 " ).read()[0:12] )
+	
+	SRO=float ( os.popen("sqsgenerator alpha sqs CONTCAR | grep 'a =' | cut -d'=' -f 2 " ).read()[0:12] )
+	
+	shell_1=float ( os.popen("sqsgenerator alpha sqs CONTCAR | grep 'a =' | cut -d'=' -f 2 " ).read())
+	
 	new_energy = calculate_energy(); # Calculate new energy of the swap atoms
-	print('Energy in POS_{:3s} folder: {:15.6f} {:15.12f}'.format(str(i).zfill(3), new_energy, SRO/n_atoms), end = '\t')
+	
+	print('{:3d} Energy in POS_{:3s} folder: {:15.6f} {:15.12f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
+	
 	tot_energy, naccept, nreject = metropolis_MC(new_energy, old_energy, naccept, nreject)
 	
 	os.chdir('../')
@@ -113,5 +120,6 @@ for i in range(1, sample):
 		fdata3.write ("{:3d} {:15.15s} {:15.8f} {:22.12f} {:12.3f}% {:12.3f}%\n".format(i, 'POSCAR_'+str(i).zfill(3), new_energy-old_energy, SRO, (naccept/sample)*100, (nreject/sample)*100 ))
 
 
-	
+print('Accepted:: {:3d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
+
 	

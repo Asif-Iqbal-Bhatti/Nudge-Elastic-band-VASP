@@ -86,40 +86,35 @@ def metropolis_MC(new_energy, old_energy, naccept, nreject):
 	return tot_energy, naccept, nreject
 
 '''------------------------------------MAIN PROGRAM--------------------------'''
-	
-# First obtain the ground/optimized energy of the current SQS or SRO structure
-naccept = 0; nreject = 0; 
-old_energy = calculate_energy();
-n_atoms, pos, firstline, alat, Latvec1,Latvec2,Latvec3, elementtype, atomtypes, Coordtype = read_poscar();
-print ("----> Initial system Energy: {:15.8f}".format(old_energy), end = '\n')
-
-with open('profile.dat', 'a') as fdata3:
-	fdata3.write ("T={:5f} Sample={:5d} Atoms={:5d}\n".format(T, sample, n_atoms))
-with open('profile.dat', 'a') as fdata3:
-	fdata3.write ("{:20s} {:15.12s} {:12s} {:12s} {:12s}\n".format(" ","Ediff", "SRO", "Acceptance", "Rejection" ))
-	
-for i in range(1, sample):
-
-	os.chdir('POS_'+str(i).zfill(3))
-	
-	#SRO=subprocess.call(['sqsgenerator','alpha','sqs','CONTCAR'], shell = False)
-	
-	SRO=float ( os.popen("sqsgenerator alpha sqs CONTCAR | grep 'a =' | cut -d'=' -f 2 " ).read()[0:12] )
-	
-	shell_1=float ( os.popen("sqsgenerator alpha sqs CONTCAR | grep 'a =' | cut -d'=' -f 2 " ).read())
-	
-	new_energy = calculate_energy(); # Calculate new energy of the swap atoms
-	
-	print('{:3d} Energy in POS_{:3s} folder: {:15.6f} {:15.12f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
-	
-	tot_energy, naccept, nreject = metropolis_MC(new_energy, old_energy, naccept, nreject)
-	
-	os.chdir('../')
+if __name__ == "__main__":
+	# First obtain the ground/optimized energy of the current SQS or SRO structure
+	naccept = 0; nreject = 0; 
+	old_energy = calculate_energy();
+	n_atoms, pos, firstline, alat, Latvec1,Latvec2,Latvec3, elementtype, atomtypes, Coordtype = read_poscar();
+	print ("----> Initial system Energy: {:15.8f}".format(old_energy), end = '\n')
 	
 	with open('profile.dat', 'a') as fdata3:
-		fdata3.write ("{:3d} {:15.15s} {:15.8f} {:22.12f} {:12.3f}% {:12.3f}%\n".format(i, 'POSCAR_'+str(i).zfill(3), new_energy-old_energy, SRO, (naccept/sample)*100, (nreject/sample)*100 ))
-
-
-print('Accepted:: {:3d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
-
+		fdata3.write ("T={:5f} Sample={:5d} Atoms={:5d}\n".format(T, sample, n_atoms))
+	with open('profile.dat', 'a') as fdata3:
+		fdata3.write ("{:20s} {:15.12s} {:12s} {:12s} {:12s}\n".format(" ","Ediff", "SRO", "Acceptance", "Rejection" ))
+		
+	for i in range(1, sample):
+		os.chdir('POS_'+str(i).zfill(3))
+		
+		#SRO=subprocess.call(['sqsgenerator','alpha','sqs','CONTCAR'], shell = False)
+		SRO=float ( os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
+		new_energy = calculate_energy(); # Calculate new energy of the swap atoms
+		print('{:3d} Energy in POS_{:3s} folder: {:15.6f} {:13.6f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
+		tot_energy, naccept, nreject = metropolis_MC(new_energy, old_energy, naccept, nreject)
+		
+		os.chdir('../')
+		
+		with open('profile.dat', 'a') as fdata3:
+			fdata3.write ("{:3d} {:9.10s} {:13.8f} {:15.5f} {:10.3f}% {:10.3f}%\n".format(i, 'POSCAR_'+str(i).zfill(3), new_energy-old_energy, SRO, (naccept/sample)*100, (nreject/sample)*100 ))
+	
+	
+	print('Accepted:: {:3d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
+	with open('profile.dat', 'a') as fdata3:
+		fdata3.write ('Accepted:: {:3d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
+		
 	

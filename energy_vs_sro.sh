@@ -1,6 +1,6 @@
 #!/bin/bash
-#### NB: sqsgenerator code has been modified such that this script can read and parse in an
-####     systematic way.
+#### NB: sqsgenerator code has been modified such that this script can read and parse in a
+####     systematic manner.
 echo > ratio.dat
 for d in */; 
 do

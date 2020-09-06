@@ -6,22 +6,19 @@
 ####     This scripte extract and computes the Energy and SRO value and then rearrange and 
 ####     sort the file with reference to the Acceptance criterion generated with python 
 ####     script. FLOWCHART::
-####
-#--------------------------------------------------------------------------------------------
+####     FIRST RUN :: SRO_vs_energy.py script then this script
+####     "Accept.dat" file is generated from SRO_vs_energy.py script.
+##--------------------------------------------------------------------------------------------
 #echo > ratio.dat
-#for d in */; 
-#do
+#for d in */; do
 #f=${d%/}; #ext=${d##*-}
 #E=`grep "free  energy   TOTEN  =" $d/OUTCAR | tail -1 | awk '{printf "%f", $5 }'`
-#  #SRO=`sqsgenerator alpha sqs $d/CONTCAR --weights=1,0.5 --verbosity=1 | grep "a =" | awk '{printf "%f", $3 }'`
-#SRO=`sqsgenerator alpha sqs $d/CONTCAR --weights=1,0.5 --verbosity=3`
+#SRO=`sqsgenerator alpha sqs $d/CONTCAR --weight=1,0.5 --verbosity=3`
 #  #echo $d $E $SRO | awk '{printf "%s" "\t" "%f" "\t" "%s\n", $1, $2, $3 }' >> ratio.dat
 #echo $f";" $E";" $SRO  >> ratio.dat
 #done
-#--------------------------------------------------------------------------------------------
-
-input="ratio.dat"
-sed -i '/^[[:space:]]*$/d' $input
+##--------------------------------------------------------------------------------------------
+input="ratio.dat" ; sed -i '/^[[:space:]]*$/d' $input
 while IFS= read -r line
 do
 printf '%s\n' "$line" | awk -F\; '{print $1, $2, $3}' >> .tmp1
@@ -37,7 +34,8 @@ printf '%s\n' "$line" | awk -F\; '{for(i=1;i<=NF;i++) {if($i ~ /Hf-Zr|Zr-Hf/){pr
 printf '%s\n' "$line" | awk -F\; '{for(i=1;i<=NF;i++) {if($i ~ /Nb-Zr|Zr-Nb/){print $i}}}' >> .tmp11
 done < "$input"
 
-paste -d " " .tmp1 .tmp2 .tmp3 .tmp4 .tmp5 .tmp6 .tmp7 .tmp8 .tmp9 .tmp10 .tmp11 | tee energy_vs_sro.dat
-rm .tmp*
+paste -d " " .tmp1 .tmp2 .tmp3 .tmp4 .tmp5 .tmp6 .tmp7 .tmp8 .tmp9 .tmp10 .tmp11 > energy_vs_sro.dat
 sed -i 's/=/ /g' energy_vs_sro.dat
-awk -F' ' 'NR==FNR{c[$1$2]++;next};c[$1$2] > 0' accept.dat energy_vs_sro.dat | sort -n -k2 > FINAL.dat
+awk -F' ' 'NR==FNR{c[$1$2]++;next};c[$1$2] > 0' accept.dat energy_vs_sro.dat | sort -n -k2 | tee FINAL.dat
+rm .tmp*
+

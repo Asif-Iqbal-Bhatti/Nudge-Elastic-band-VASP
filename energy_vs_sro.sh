@@ -2,7 +2,7 @@
 #--------------------------------------------------------------------------------------------
 #### sqsgenerator code has been modified such that this script can read and parse in a
 #### systematic way.
-#### ONLY 1st and 2nd shells have been considered.
+#### ONLY 1st and 2nd shells have been considered (change --weight=1,0.5).
 #### This scripte extract and computes the Energy and SRO value and then rearrange and 
 #### sort the file with reference to the Acceptance criterion generated with python 
 #### script. FLOWCHART ::

@@ -1,4 +1,4 @@
-# Nudge-Elastic-band | Short range order (SRO)
+# Nudge-Elastic-band to calculate Peirels barrier
 
 NB: The settings for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 
@@ -6,12 +6,9 @@ The barrier obtained (Ta: 46.3 meV/b) with this setup agrees favorably with
 the values given in the references. Hence, I can be sure my setup is right, 
 and I can extend this approach to High Entropy Alloys.
 
-NB:: The relaxation should be done perpendicular to the screw dislocation line, 
-that is on the plane. (T T F VASP5 format).
-
-- Initial and finally geometries should be fully relaxed. 
-- Generate with ASE-NEB the transition path (initial guess) between the initial 
-  and final geometries by interpolating linearly or using idpp. 
+- Initial and final geometry should be fully relaxed. 
+- Generate with ASE-NEB the transition path (initial guess path) between the initial 
+  and final configuration by interpolating linearly or using idpp. 
 - The intermediate images should be constrained and relaxed accordingly.
 
 #---------------------------------------------------------------------------------------
@@ -21,6 +18,9 @@ Calling a script from python is not a good idea, I am sure there must be a best 
 quick way to internally call the function using "ase" module (https://wiki.fysik.dtu.dk/ase/). 
 
 #---------------------------------------------------------------------------------------
+
+NB :: The relaxation should be done perpendicular to the screw dislocation line, 
+that is on the plane. (T T F VASP5 format), if you are using "Drag method".
 
 REF:
 

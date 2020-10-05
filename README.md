@@ -1,4 +1,4 @@
-# Nudge-Elastic-band to calculate Peirels barrier
+# Nudge-Elastic-band to calculate Peierls barrier
 
 NB: The settings for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 

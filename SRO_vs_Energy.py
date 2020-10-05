@@ -15,7 +15,7 @@ import os.path, time
 
 k = 8.617333262145E-5 # Boltzmann constant
 T = 500 # Temperature in Kelvin
-sample = 101 # Number of sample could be # of atoms to swap
+sample = 1600 # Number of sample could be # of atoms to swap
 
 out_files = ["profile.dat", "accept.dat"];
 for f in out_files: 
@@ -23,7 +23,7 @@ for f in out_files:
 		os.remove(f) #this deletes the file
 				
 def read_poscar():
-	pos = []; kk = []; lattice = []; sum = 0
+	pos = []; kk = []; lattice = []; sum = 0; dict = {}
 	file = open('CONTCAR','r')
 	firstline  = file.readline() # IGNORE first line comment
 	alat = float( file.readline() )# scale
@@ -43,8 +43,13 @@ def read_poscar():
 		coord = file.readline().split()
 		coord = [float(i) for i in coord]
 		pos = pos + [coord]
-	pos = np.array(pos)
+	#pos = np.array(pos)
 	file.close()
+	#for index, line in enumerate(pos):
+	#	dict[index] = line
+	#for num, atm_num in dict.items():
+	#	print("{} {}".format(num, atm_num) )
+	
 	return n_atoms,pos,firstline,alat,Latvec1,Latvec2,Latvec3,elementtype,atomtypes,Coordtype
 
 def calculate_energy():
@@ -61,7 +66,7 @@ def calculate_energy():
 	return old_energy
 
 def metropolis_MC(new_energy, old_energy, naccept, nreject):	
-	tot_energy = []
+	a_energy = 0; r_energy = 0
 	accept = False;
 	# Accept if the energy goes down
 	if (new_energy <= old_energy):
@@ -79,50 +84,66 @@ def metropolis_MC(new_energy, old_energy, naccept, nreject):
 		# Accept the move
 		naccept += 1; 
 		print ("{}: {:10.3f}%".format("Accept ratio", (naccept/sample)*100  )  )
-		tot_energy = new_energy
-		yes="Accept"
+		a_energy = new_energy
+		yes="Accept"	
 	else:
 		# reject the move - restore the old coordinates
 		nreject += 1
 		print ("{}: {:10.3f}%".format ("Reject ratio", (nreject/sample)*100 )  )
-		tot_energy = old_energy	
+		r_energy = old_energy	; #print (r_energy) 
 		yes="Reject"
-	return tot_energy, naccept, nreject, yes
+	return a_energy, r_energy, naccept, nreject, yes
 
+def write_result(i,new_energy,old_energy,SRO,naccept,nreject,sample,yes):
+	with open('profile.dat', 'a') as fdata3:
+		fdata3.write ("{:4d} {:9.10s} {:11.6f} {:8.5f} {:8.3f} {:8.3f} {:s}\n" \
+		.format(i, 'POS_'+str(i).zfill(3), new_energy, SRO, (naccept/sample)*100, (nreject/sample)*100, yes ) )
+	
+	if (yes=='Accept'):
+		with open('accept.dat', 'a') as fdata4:
+			fdata4.write ("{:9.10s} {:11.6f} {:8.5f} {:8.3f} {:8.3f} {:s}\n" \
+			.format('POS_'+str(i).zfill(3), new_energy, SRO, (naccept/sample)*100, (nreject/sample)*100, yes ) )
+			
 '''------------------------------------MAIN PROGRAM--------------------------'''
+
 if __name__ == "__main__":
-	# First obtain the ground/optimized energy of the current SQS or SRO structure
+	### First obtain the ground/optimized energy of the current SQS in an ideal position
 	naccept = 0; nreject = 0; 
 	old_energy = calculate_energy();
+	SRO=float(os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
 	n_atoms, pos, firstline, alat, Latvec1,Latvec2,Latvec3, elementtype, atomtypes, Coordtype = read_poscar();
-	print ("----> Initial system Energy: {:15.8f}".format(old_energy), end = '\n')
+	print ("---> Initial system Energy: {:15.6f} {:15.6f}".format(old_energy, SRO), end = '\n')
 	
 	with open('profile.dat', 'a') as fdata3:
-		fdata3.write ("T={:4f} K Sample={:5d} Atoms={:5d}\n".format(T, sample, n_atoms))
+		fdata3.write ("T={:4f} K Sample={:5d} Atoms={:5d} E_ini={:.6f}\n".format(T, sample, n_atoms,old_energy ))
 		fdata3.write ("{:17s} {:11.12s} {:6.6s} {:6s} {:8s}\n".format(" ","Ediff", "SRO", "Accept[%]", "Reject[%]" ))
 		
 	for i in range(1, sample):
+		
 		os.chdir('POS_'+str(i).zfill(3))
 		
 		#SRO=subprocess.call(['sqsgenerator','alpha','sqs','CONTCAR'], shell = False)
-		SRO=float(os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
+		#SRO=float(os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
+		SRO=1.0
 		new_energy = calculate_energy(); # Calculate new energy of the swap atoms
-		print('{:3d} Energy in POS_{:3s} folder: {:15.6f} {:13.6f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
-		tot_energy, naccept, nreject, yes = metropolis_MC(new_energy, old_energy, naccept, nreject)
+		print('{:4d} Energy in POS_{:3s}: {:15.6f} {:13.4f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
+		a_energy, r_energy, naccept, nreject, yes = metropolis_MC(new_energy, old_energy, naccept, nreject)
+		#print (a_energy, r_energy)
 		
 		os.chdir('../')
 		
-		with open('profile.dat', 'a') as fdata3:
-			fdata3.write ("{:3d} {:9.10s} {:11.8f} {:8.5f} {:8.3f} {:8.3f} {:s}\n" \
-			.format(i, 'POS_'+str(i).zfill(3), new_energy-old_energy, SRO, (naccept/sample)*100, (nreject/sample)*100, yes ) )
-	
-		if (yes=='Accept'):
-			with open('accept.dat', 'a') as fdata4:
-				fdata4.write ("{:9.10s} {:11.6f} {:8.5f} {:8.3f} {:8.3f} {:s}\n" \
-				.format('POS_'+str(i).zfill(3), new_energy, SRO, (naccept/sample)*100, (nreject/sample)*100, yes ) )
-	
-	print('Accepted:: {:3d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
+		write_result(i,new_energy,old_energy,SRO,naccept,nreject,sample,yes)
+		
+		old_energy = a_energy
+		
+	print('Accepted:: {:4d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
 	with open('profile.dat', 'a') as fdata3:
 		fdata3.write ('Accepted:: {:3d}, Rejected:: {:3d}\n'.format(naccept, nreject) )
 		
+	lines = open('profile.dat', 'r').readlines()
+	output = open("profile_ordered.dat", 'w')
+	for line in sorted(lines[2:sample+1], key=lambda line: line.split()[2], reverse=False):
+		output.write(line)
+	output.close()
+	
 	

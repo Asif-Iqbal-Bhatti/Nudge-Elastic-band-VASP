@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
+
+'''
 #------------------------------------------------------------------------
 # USAGE  :: python3 monte_carlo_HEA.py 
 # Author :: Asif Iqbal
-# DATED  :: 03/09/2020
-# Metropolis Monte Carlo in a NVT (canonical) ensemble
+# DATED  :: 10/10/2020
+# Metropolis Monte Carlo simulation in a NVT (canonical) ensemble
 # ADAPTED FROM:: https://chryswoods.com/intro_to_mc/part1/metropolis.html
+#                http://phycomp.technion.ac.il/~talimu/monte_carlo2.html
 # This script calculates the energy of the system by swapping the atoms
 # and invoking the MC code to find the lowest structure.
 #------------------------------------------------------------------------
+'''
 
 import numpy as np
 import os, sys, random, subprocess, shutil
 import os.path, time
 
-k = 8.617333262145E-5 # Boltzmann constant
+k = 8.617333262145E-5 # Boltzmann constant eV/K
 T = 500 # Temperature in Kelvin
 sample = 1600 # Number of sample could be # of atoms to swap
 
-out_files = ["profile.dat", "accept.dat"];
+out_files = ["profile.dat", "accept.dat", "profile_ordered.dat"];
 for f in out_files: 
 	if os.path.exists(f):
-		os.remove(f) #this deletes the file
+		os.remove(f) 
 				
 def read_poscar():
 	pos = []; kk = []; lattice = []; sum = 0; dict = {}
@@ -54,7 +58,6 @@ def read_poscar():
 
 def calculate_energy():
 	#old_energy = os.popen(" grep 'free  energy   TOTEN  =' OUTCAR | tail -1 | awk '{print $5 }' " ).read()
-	#old_energy = float ( old_energy )
 	f = open('OUTCAR',"r")
 	lines = f.readlines()
 	f.close()
@@ -104,38 +107,35 @@ def write_result(i,new_energy,old_energy,SRO,naccept,nreject,sample,yes):
 			fdata4.write ("{:9.10s} {:11.6f} {:8.5f} {:8.3f} {:8.3f} {:s}\n" \
 			.format('POS_'+str(i).zfill(3), new_energy, SRO, (naccept/sample)*100, (nreject/sample)*100, yes ) )
 			
-'''------------------------------------MAIN PROGRAM--------------------------'''
+###------------------------------------MAIN PROGRAM--------------------------###
 
 if __name__ == "__main__":
-	### First obtain the ground/optimized energy of the current SQS in an ideal position
-	naccept = 0; nreject = 0; 
-	old_energy = calculate_energy();
+	### First obtain the energy of the current SQS in an ideal position
+	naccept = 0; nreject = 0; old_energy = calculate_energy();
 	SRO=float(os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
 	n_atoms, pos, firstline, alat, Latvec1,Latvec2,Latvec3, elementtype, atomtypes, Coordtype = read_poscar();
-	print ("---> Initial system Energy: {:15.6f} {:15.6f}".format(old_energy, SRO), end = '\n')
+	print ("---> SQS System Energy & SRO: {:15.6f} {:15.6f}".format(old_energy, SRO), end = '\n')
 	
 	with open('profile.dat', 'a') as fdata3:
 		fdata3.write ("T={:4f} K Sample={:5d} Atoms={:5d} E_ini={:.6f}\n".format(T, sample, n_atoms,old_energy ))
 		fdata3.write ("{:17s} {:11.12s} {:6.6s} {:6s} {:8s}\n".format(" ","Ediff", "SRO", "Accept[%]", "Reject[%]" ))
 		
 	for i in range(1, sample):
-		
-		os.chdir('POS_'+str(i).zfill(3))
-		
-		#SRO=subprocess.call(['sqsgenerator','alpha','sqs','CONTCAR'], shell = False)
+		os.chdir('POS_'+str(i).zfill(3))		
+		#SRO=subprocess.call(['sqsgenerator','alpha','sqs','--weight=1,0.5','CONTCAR'], shell = False).read()
 		#SRO=float(os.popen("sqsgenerator alpha sqs CONTCAR --weight=1,0.5 | head -n 1 " ).read()[0:8] )
 		SRO=1.0
-		new_energy = calculate_energy(); # Calculate new energy of the swap atoms
-		print('{:4d} Energy in POS_{:3s}: {:15.6f} {:13.4f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
+		# Calculate new energy of the swapped atoms
+		new_energy = calculate_energy(); 
+		print('{:4d} Energy in POS_{:3s}: {:15.6f} {:13.3f}'.format(i, str(i).zfill(3), new_energy, SRO), end = '\t')
 		a_energy, r_energy, naccept, nreject, yes = metropolis_MC(new_energy, old_energy, naccept, nreject)
 		#print (a_energy, r_energy)
 		
 		os.chdir('../')
-		
 		write_result(i,new_energy,old_energy,SRO,naccept,nreject,sample,yes)
-		
 		old_energy = a_energy
-		
+
+	### -------------- WRITING to the screen and to the file  --------------  	
 	print('Accepted:: {:4d}, Rejected:: {:3d}'.format(naccept, nreject), end = '\n')
 	with open('profile.dat', 'a') as fdata3:
 		fdata3.write ('Accepted:: {:3d}, Rejected:: {:3d}\n'.format(naccept, nreject) )
@@ -146,4 +146,5 @@ if __name__ == "__main__":
 		output.write(line)
 	output.close()
 	
+
 	

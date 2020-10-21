@@ -1,4 +1,4 @@
-# Nudge Elastic band or Drag Method to calculate Peierls barrier for HEAs
+# Calculate Peierls barrier for HEAs using Nudge Elastic band or Drag Method
 
 NB: The setting for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 

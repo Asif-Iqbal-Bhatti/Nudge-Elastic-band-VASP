@@ -1,5 +1,11 @@
 # Calculate Peierls barrier for HEAs using Nudge Elastic band or Drag Method
 
+**This script compiles with python 3 or higher version.**
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+![pypi](https://img.shields.io/pypi/v/pybadges.svg)
+![versions](https://img.shields.io/pypi/pyversions/pybadges.svg)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
+
 NB: The setting for the NEB calculations can be tricky at times therefore, caution should be taken while using the provided code.
 
 The barrier obtained (Ta: 46.3 meV/b) with this setup agrees favorably with 

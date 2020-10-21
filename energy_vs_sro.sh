@@ -1,13 +1,13 @@
 #!/bin/bash
 #--------------------------------------------------------------------------------------------
-#### sqsgenerator code has been modified such that this script can read and parse in a
-#### systematic way.
-#### ONLY 1st and 2nd shells have been considered (change --weight=1,0.5).
-#### This scripte extract and computes the Energy and SRO value and then rearrange and 
-#### sort the file with reference to the Acceptance criterion generated with python 
-#### script. FLOWCHART ::
-#### FIRST RUN :: SRO_vs_energy.py script then this script.
-#### "Accept.dat" file is generated from SRO_vs_energy.py script.
+# sqsgenerator code has been modified such that this script can read and parse in a
+# systematic way.
+# ONLY 1st and 2nd shells have been considered.
+# This script extract and computes the Energy and SRO value and then rearrange and 
+# sort the file with reference to the Acceptance criterion generated with python 
+# script. FLOWCHART ::
+# FIRST RUN :: SRO_vs_energy.py script then this script.
+# "Accept.dat" file is generated from SRO_vs_energy.py script.
 #--------------------------------------------------------------------------------------------
 echo > ratio.dat
 for d in $(seq -f "%03g" 1 1599); do
@@ -41,6 +41,7 @@ done < "$input"
 
 paste -d " " .tmp1 .tmp2 .tmp3 .tmp4 .tmp5 .tmp6 .tmp7 .tmp8 .tmp9 .tmp10 .tmp11 .tmp12 .tmp13 .tmp14 .tmp15 .tmp16 > energy_vs_sro.dat
 sed -i 's/=/ /g' energy_vs_sro.dat
-awk -F' ' 'NR==FNR{c[$1$2]++;next};c[$1$2] > 0' accept.dat energy_vs_sro.dat | sort -n -k2 | tee FINAL.dat
+sort -rnk2 energy_vs_sro.dat | awk '!a[$2]++' > energy_vs_sro_uniq.dat
+awk -F' ' 'NR==FNR{c[$1$2]++;next};c[$1$2] > 0' accept.dat energy_vs_sro_uniq.dat | sort -n -k2 | tee FINAL.dat
 rm .tmp*
 

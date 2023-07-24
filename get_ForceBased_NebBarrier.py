@@ -13,8 +13,6 @@ import os
 import numpy as np 
 import matplotlib.pyplot as plt
 
-cwd = os.getcwd()
-NumJ = 20 # default
 
 # READ IN THE MEP FILE
 data = np.loadtxt("neb.dat", usecols=(1, 2, 3))
@@ -34,6 +32,7 @@ b = -F1
 c = 3 * Ud + F1 + Fs
 d = -2 * Ud - Fs
 
+NumJ = 20 # default
 # GENERATING THE OUTPUT FILE CONTAINING THE SPLINE
 with open("spline.dat", 'w') as f:
     for i in range(NumI):
@@ -79,12 +78,12 @@ Pos = np.where(valid_f_mask, np.arange(NumI - 1) + f, 0)
 extrema_values = d * f**3 + c * f**2 + b * f + a
 Ext.update({pos: value for pos, value in zip(Pos, extrema_values) if pos != 0})
 
-NumE = 0
+k = 0
 # Write out the extrema information to EXTREMUM.dat
-with open("EXTS.dat", 'w') as f:
+with open("EXTREMUM.dat", 'w') as f:
     for Pos in sorted(Ext.keys()):
-        NumE += 1
-        outline = f"Extremum {NumE} found at image {Pos:9.6f} with energy: {Ext[Pos]:9.6f}\n"
+        k += 1
+        outline = f"Extremum {k} found at image {Pos:9.6f} with energy: {Ext[Pos]:9.6f}\n"
         f.write(outline)
 
 ########
@@ -107,5 +106,5 @@ plt.ylabel("Energy [eV]")
 plt.plot(x_spline, y_spline, label="Spline Curve", color='b', linewidth=2.5)
 plt.scatter(x_neb, y_neb, label="NEB Points", color='red', marker='o', s=30)
 plt.legend()
-plt.savefig("mep.pdf", dpi=300, bbox_inches='tight')
+plt.savefig("MEP.pdf", dpi=300, bbox_inches='tight')
 plt.show()

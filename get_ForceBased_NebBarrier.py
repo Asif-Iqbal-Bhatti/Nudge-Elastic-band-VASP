@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 
 '''
 ##########################################################################
@@ -48,29 +48,39 @@ with open("spline.dat", 'w') as f:
                 f.write(f"{Ispl:10.9f} {Rspl:12.9f} {Espl:12.9f} {Fspl:12.9f}\n")
 
 # FINDING EXTREMA ALONG THE MEP
-Ext = {}
-for i in range(NumI - 1):
-    Desc = c[i]**2 - 3 * b[i] * d[i]
-    if Desc >= 0:
-        f = -1
-        # Quadratic case
-        if d[i] == 0 and c[i] != 0:
-            f = -(b[i] / (2 * c[i]))
-        # Cubic case 1
-        elif d[i] != 0:
-            f = -(c[i] + np.sqrt(Desc)) / (3 * d[i])
-        if 0 <= f <= 1:
-            Pos = i + f
-            Ext[Pos] = d[i] * f**3 + c[i] * f**2 + b[i] * f + a[i]
-        # Cubic case 2
-        if d[i] != 0:
-            f = -(c[i] - np.sqrt(Desc)) / (3 * d[i])
-            if 0 <= f <= 1:
-                Pos = i + f
-                Ext[Pos] = d[i] * f**3 + c[i] * f**2 + b[i] * f + a[i]
+Desc = c**2 - 3 * b * d
+f = np.zeros_like(Desc)
+
+# Quadratic case
+quadratic_mask = np.logical_and(d == 0, c != 0)
+f[quadratic_mask] = -(b[quadratic_mask] / (2 * c[quadratic_mask]))
+
+# Cubic case 1
+cubic_case1_mask = np.logical_and(d != 0, Desc >= 0)
+f[cubic_case1_mask] = -(c[cubic_case1_mask] + np.sqrt(Desc[cubic_case1_mask])) / (3 * d[cubic_case1_mask])
+
+# Check if f is within [0, 1]
+valid_f_mask = np.logical_and(f >= 0, f <= 1)
+
+# Calculate the positions and values of extrema
+Pos = np.where(valid_f_mask, np.arange(NumI - 1) + f, 0)
+extrema_values = d * f**3 + c * f**2 + b * f + a
+Ext = {pos: value for pos, value in zip(Pos, extrema_values) if pos != 0}
+
+# Cubic case 2
+cubic_case2_mask = np.logical_and(d != 0, Desc >= 0)
+f[cubic_case2_mask] = -(c[cubic_case2_mask] - np.sqrt(Desc[cubic_case2_mask])) / (3 * d[cubic_case2_mask])
+
+# Check if f is within [0, 1]
+valid_f_mask = np.logical_and(f >= 0, f <= 1)
+
+# Calculate the positions and values of extrema
+Pos = np.where(valid_f_mask, np.arange(NumI - 1) + f, 0)
+extrema_values = d * f**3 + c * f**2 + b * f + a
+Ext.update({pos: value for pos, value in zip(Pos, extrema_values) if pos != 0})
 
 NumE = 0
-# Write out the extrema information to exts.dat
+# Write out the extrema information to EXTREMUM.dat
 with open("EXTS.dat", 'w') as f:
     for Pos in sorted(Ext.keys()):
         NumE += 1
